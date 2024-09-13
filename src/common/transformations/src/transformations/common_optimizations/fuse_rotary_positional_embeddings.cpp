@@ -581,8 +581,7 @@ ov::pass::RoPEFusionChatGLM4::RoPEFusionChatGLM4(int split_output_id) {
     MATCHER_SCOPE(RoPEFusionChatGLM4);
 
     auto qkv_linear = makePattern("[?,?,?]");  //  [seq_length, batch_size, 4608]
-    auto seq_length = makePattern("i32[2]");
-    auto seq_length_1d = makePattern("i32[1]");
+    auto seq_length = makePattern("i32[1]");
     auto cos_sin_cache = makePattern("[?,?,?,?]");  // [max_pos_embeddings, batch_size, 32, 2]
 
     auto ndims = ov::gen_pattern::Symbol("ndims");
@@ -620,7 +619,7 @@ ov::pass::RoPEFusionChatGLM4::RoPEFusionChatGLM4(int split_output_id) {
     const_target_shape_1->set_friendly_name("const_target_shape_1");
 
     auto ListConstruct_379_Concat =
-        makePattern<opset1::Concat>({{-1}, {1}, seq_length_1d, {ndims / 2}, {2}}, {{"axis", 0}});
+        makePattern<opset1::Concat>({{-1}, {1}, seq_length, {ndims / 2}, {2}}, {{"axis", 0}});
     ListConstruct_379_Concat->set_friendly_name("ListConstruct_379_Concat");
     auto const_target_shape_2 = makeConst({batch, 1, seq_len, ndims / 2, 2});
     const_target_shape_2->set_friendly_name("const_target_shape_2");
@@ -633,9 +632,10 @@ ov::pass::RoPEFusionChatGLM4::RoPEFusionChatGLM4(int split_output_id) {
     x_even->set_friendly_name("x_even");
     auto x_odd = makePattern<opset8::Gather>({reshape_Reshape_453, 1, -1}, {{"batch_dims", 0}});
     x_odd->set_friendly_name("x_odd");
-    auto slice_Slice_449 = makePattern<ov::opset8::Slice>({cos_sin_cache, {0}, seq_length, {1}, {0}});
+    auto ScatterUpdate = makePattern<opset3::ScatterUpdate>({{0, 0}, {1}, seq_length, {0}}, {});
+    auto slice_Slice_449 = makePattern<ov::opset8::Slice>({cos_sin_cache, {0}, ScatterUpdate, {1}, {0}});
     slice_Slice_449->set_friendly_name("slice_Slice_449");
-    auto slice_StridedSlice_449 = GenStridedSlice(cos_sin_cache, {0}, seq_length, {1}, 1);
+    auto slice_StridedSlice_449 = GenStridedSlice(cos_sin_cache, {0}, ScatterUpdate, {1}, 1);
     slice_StridedSlice_449->set_friendly_name("slice_StridedSlice_449");
     auto var_split_2 = makePattern<opset1::VariadicSplit>({cos_sin_cache, 0, {0, ov::gen_pattern::Symbol("end")}});
     var_split_2->set_output_size(2);
