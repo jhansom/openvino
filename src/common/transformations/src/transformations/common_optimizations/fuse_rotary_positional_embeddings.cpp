@@ -435,66 +435,263 @@ ov::pass::RoPEFusionChatGLM::RoPEFusionChatGLM(int split_output_id) {
 
     auto qkv_proj = makePattern<opset1::VariadicSplit>({qkv_linear, -1, {total_size_q, total_size_k, total_size_v}});
     qkv_proj->set_output_size(3);
+    qkv_proj->set_friendly_name("qkv_proj");
 
     // get key [L, B, Hkv, S]
     auto cur_key = makePattern<opset1::Reshape>({qkv_proj->output(split_output_id), {0, 0, head_cnt, head_size}},
                                                 {{"special_zero", true}});
+    cur_key->set_friendly_name("cur_key");
+
 
     auto slice_Slice_437 = GenSlice(cur_key, 0, ndims, 1, 3);
+    slice_Slice_437->set_friendly_name("slice_Slice_437");
     auto var_split_1 = makePattern<opset1::VariadicSplit>({cur_key, 3, {ndims, ov::gen_pattern::Symbol("end")}});
     var_split_1->set_output_size(2);
+    var_split_1->set_friendly_name("var_split_1");
 
     // rotate half
     auto ListConstruct_452_Concat =
         makePattern<opset1::Concat>({seq_length, {-1}, {head_cnt}, {ndims / 2}, {2}}, {{"axis", 0}});
+    ListConstruct_452_Concat->set_friendly_name("ListConstruct_452_Concat");
     auto const_target_shape_1 = makeConst({seq_len, batch, head_cnt, ndims / 2, 2});
+    const_target_shape_1->set_friendly_name("const_target_shape_1");
 
     auto ListConstruct_379_Concat =
         makePattern<opset1::Concat>({seq_length, {-1}, {1}, {ndims / 2}, {2}}, {{"axis", 0}});
+    ListConstruct_379_Concat->set_friendly_name("ListConstruct_379_Concat");
     auto const_target_shape_2 = makeConst({seq_len, batch, 1, ndims / 2, 2});
+    const_target_shape_2->set_friendly_name("const_target_shape_2");
 
     auto reshape_Reshape_453 = makePattern<opset1::Reshape>(
         {slice_Slice_437 | var_split_1->output(0), ListConstruct_452_Concat | const_target_shape_1});
+    reshape_Reshape_453->set_friendly_name("reshape_Reshape_453");
 
     auto x_even = makePattern<opset8::Gather>({reshape_Reshape_453, 0, -1}, {{"batch_dims", 0}});
+    x_even->set_friendly_name("x_even");
     auto x_odd = makePattern<opset8::Gather>({reshape_Reshape_453, 1, -1}, {{"batch_dims", 0}});
+    x_odd->set_friendly_name("x_odd");
     auto slice_Slice_449 = makePattern<ov::opset8::Slice>({cos_sin_cache, {0}, seq_length, {1}, {0}});
+    slice_Slice_449->set_friendly_name("slice_Slice_449");
     auto slice_StridedSlice_449 = GenStridedSlice(cos_sin_cache, {0}, seq_length, {1}, 0);
+    slice_StridedSlice_449->set_friendly_name("slice_StridedSlice_449");
     auto var_split_2 = makePattern<opset1::VariadicSplit>({cos_sin_cache, 0, {0, ov::gen_pattern::Symbol("end")}});
     var_split_2->set_output_size(2);
+    var_split_2->set_friendly_name("var_split_2");
 
     auto view_Reshape_460 =
         makePattern<opset1::Reshape>({slice_StridedSlice_449 | slice_Slice_449 | var_split_2->output(0),
                                       ListConstruct_379_Concat | const_target_shape_2},
                                      {{"special_zero", false}});
+    view_Reshape_460->set_friendly_name("view_Reshape_460");
 
     auto cos_tab = makePattern<opset8::Gather>({view_Reshape_460, 0, -1}, {{"batch_dims", 0}});
+    cos_tab->set_friendly_name("cos_tab");
     auto x_even_cos = makePattern<opset1::Multiply>({x_even, cos_tab}, {{"auto_broadcast", "numpy"}});
+    x_even_cos->set_friendly_name("x_even_cos");
 
     auto sin_tab = makePattern<opset8::Gather>({view_Reshape_460, 1, -1}, {{"batch_dims", 0}});
+    sin_tab->set_friendly_name("sin_tab");
     auto x_odd_sin = makePattern<opset1::Multiply>({x_odd, sin_tab}, {{"auto_broadcast", "numpy"}});
+    x_odd_sin->set_friendly_name("x_odd_sin");
     auto neg_x_odd_sin = makePattern<opset1::Multiply>({x_odd_sin, -1.000000f}, {{"auto_broadcast", "numpy"}});
+    neg_x_odd_sin->set_friendly_name("neg_x_odd_sin");
     auto sub_Subtract_469 = makePattern<opset1::Add>({x_even_cos, neg_x_odd_sin}, {{"auto_broadcast", "numpy"}});
+    sub_Subtract_469->set_friendly_name("sub_Subtract_469");
 
     auto y_even = makePattern<opset1::Unsqueeze>({sub_Subtract_469, -1});
+    y_even->set_friendly_name("y_even");
     auto x_odd_cos = makePattern<opset1::Multiply>({x_odd, cos_tab}, {{"auto_broadcast", "numpy"}});
+    x_odd_cos->set_friendly_name("x_odd_cos");
     auto x_even_sin = makePattern<opset1::Multiply>({x_even, sin_tab}, {{"auto_broadcast", "numpy"}});
+    x_even_sin->set_friendly_name("x_even_sin");
     auto add_Add_476 = makePattern<opset1::Add>({x_odd_cos, x_even_sin}, {{"auto_broadcast", "numpy"}});
+    add_Add_476->set_friendly_name("add_Add_476");
     auto y_odd = makePattern<opset1::Unsqueeze>({add_Add_476, -1});
+    y_odd->set_friendly_name("y_odd");
 
     auto stack_481 = makePattern<opset1::Concat>({y_even, y_odd}, {{"axis", -1}});
+    stack_481->set_friendly_name("stack_481");
 
     auto ShapeOf_135133 = makePattern<opset1::ShapeOf>({stack_481});
+    ShapeOf_135133->set_friendly_name("ShapeOf_135133");
     auto flatten_Slice_497 = GenSlice(ShapeOf_135133, 0, 3, 1, 0);
+    flatten_Slice_497->set_friendly_name("flatten_Slice_497");
     auto flatten_Concat_500 = makePattern<opset1::Concat>({flatten_Slice_497, {-1}}, {{"axis", 0}});
+    flatten_Concat_500->set_friendly_name("flatten_Concat_500");
     auto const_target_shape_3 = makeConst({seq_len, batch, head_cnt, ndims});
+    const_target_shape_3->set_friendly_name("const_target_shape_3");
     // [length, batch, head_cnt, half_rotary_dims, 2]
     auto flatten_Reshape_501 =
         makePattern<opset1::Reshape>({stack_481, flatten_Concat_500 | const_target_shape_3}, {{"special_zero", true}});
+    flatten_Reshape_501->set_friendly_name("flatten_Reshape_501");
     auto slice_Slice_443 = GenSlice(cur_key, ndims, INT_MAX, 1, 3);
+    slice_Slice_443->set_friendly_name("slice_Slice_443");
 
     auto cat_Concat_505 =
         makePattern<opset1::Concat>({flatten_Reshape_501, slice_Slice_443 | var_split_1->output(1)}, {{"axis", -1}});
+    cat_Concat_505->set_friendly_name("cat_Concat_505");
+
+    auto result = cat_Concat_505;
+
+    matcher_pass_callback callback = [=](ov::pass::pattern::Matcher& m) {
+        const auto& pattern_map = m.get_pattern_value_map();
+        auto root = m.get_match_root();
+        PatternValidator validator(m);
+        if (!validator) {
+            return false;
+        }
+
+        op::internal::RoPE::Config config;
+        OutputVector new_args;
+        config.rotary_ndims = static_cast<size_t>(validator["ndims"]);
+        config.is_chatglm = true;
+        config.head_cnt = static_cast<size_t>(validator["head_cnt"]);
+        config.head_size = static_cast<size_t>(validator["head_size"]);
+
+        if (split_output_id == 0) {
+            // query : split_output_id == 0
+            config.slice_start = 0;
+            config.slice_stop = static_cast<size_t>(validator["total_size_q"]);
+        } else {
+            // key : split_output_id == 1
+            config.slice_start = static_cast<size_t>(validator["total_size_q"]);
+            config.slice_stop = static_cast<size_t>(config.slice_start + validator["total_size_k"]);
+        }
+
+        new_args.push_back(pattern_map.at(qkv_linear));
+        new_args.push_back(pattern_map.at(cos_sin_cache));
+        new_args.push_back(pattern_map.at(cos_sin_cache));
+
+        auto old_node = root;
+
+        auto new_node = std::make_shared<op::internal::RoPE>(new_args, config);
+        new_node->set_friendly_name(old_node->get_friendly_name());
+        ov::copy_runtime_info({pattern_map.at(flatten_Reshape_501).get_node_shared_ptr(),
+                               pattern_map.at(cat_Concat_505).get_node_shared_ptr()},
+                              new_node);
+        ov::replace_node(old_node, new_node);
+        return true;
+    };
+
+    auto m = std::make_shared<ov::pass::pattern::Matcher>(result, matcher_name);
+    this->register_matcher(m, callback);
+}
+
+ov::pass::RoPEFusionChatGLM4::RoPEFusionChatGLM4(int split_output_id) {
+    MATCHER_SCOPE(RoPEFusionChatGLM4);
+
+    auto qkv_linear = makePattern("[?,?,?]");  //  [seq_length, batch_size, 4608]
+    auto seq_length = makePattern("i32[2]");
+    auto cos_sin_cache = makePattern("[?,?,?,?]");  // [max_pos_embeddings, batch_size, 32, 2]
+
+    auto ndims = ov::gen_pattern::Symbol("ndims");
+    auto head_cnt = ov::gen_pattern::Symbol("head_cnt");
+    auto head_size = ov::gen_pattern::Symbol("head_size");
+    auto total_size_q = ov::gen_pattern::Symbol("total_size_q");
+    auto total_size_k = ov::gen_pattern::Symbol("total_size_k");
+    auto total_size_v = ov::gen_pattern::Symbol("total_size_v");
+    auto batch = ov::gen_pattern::Symbol("batch");
+    auto seq_len = ov::gen_pattern::Symbol("seq_len");
+
+    auto qkv_proj = makePattern<opset1::VariadicSplit>({qkv_linear, -1, {total_size_q, total_size_k, total_size_v}});
+    qkv_proj->set_output_size(3);
+    qkv_proj->set_friendly_name("qkv_proj");
+
+    // get key [L, B, Hkv, S]
+    auto cur_key = makePattern<opset1::Reshape>({qkv_proj->output(split_output_id), {0, 0, head_cnt, head_size}},
+                                                {{"special_zero", true}});
+    cur_key->set_friendly_name("cur_key");
+
+    auto cur_key_transposed = makePattern<opset1::Transpose>({cur_key, {0, 2, 1, 3}});
+    cur_key_transposed->set_friendly_name("cur_key_transposed");
+
+    auto slice_Slice_437 = GenSlice(cur_key_transposed, 0, ndims, 1, 3);
+    slice_Slice_437->set_friendly_name("slice_Slice_437");
+    auto var_split_1 = makePattern<opset1::VariadicSplit>({cur_key_transposed, 3, {ndims, ov::gen_pattern::Symbol("end")}});
+    var_split_1->set_output_size(2);
+    var_split_1->set_friendly_name("var_split_1");
+
+    // rotate half
+    auto ListConstruct_452_Concat =
+        makePattern<opset1::Concat>({seq_length, {-1}, {head_cnt}, {ndims / 2}, {2}}, {{"axis", 0}});
+    ListConstruct_452_Concat->set_friendly_name("ListConstruct_452_Concat");
+    auto const_target_shape_1 = makeConst({seq_len, batch, head_cnt, ndims / 2, 2});
+    const_target_shape_1->set_friendly_name("const_target_shape_1");
+
+    auto ListConstruct_379_Concat =
+        makePattern<opset1::Concat>({seq_length, {-1}, {1}, {ndims / 2}, {2}}, {{"axis", 0}});
+    ListConstruct_379_Concat->set_friendly_name("ListConstruct_379_Concat");
+    auto const_target_shape_2 = makeConst({seq_len, batch, 1, ndims / 2, 2});
+    const_target_shape_2->set_friendly_name("const_target_shape_2");
+
+    auto reshape_Reshape_453 = makePattern<opset1::Reshape>(
+        {slice_Slice_437 | var_split_1->output(0), ListConstruct_452_Concat | const_target_shape_1});
+    reshape_Reshape_453->set_friendly_name("reshape_Reshape_453");
+
+    auto x_even = makePattern<opset8::Gather>({reshape_Reshape_453, 0, -1}, {{"batch_dims", 0}});
+    x_even->set_friendly_name("x_even");
+    auto x_odd = makePattern<opset8::Gather>({reshape_Reshape_453, 1, -1}, {{"batch_dims", 0}});
+    x_odd->set_friendly_name("x_odd");
+    auto slice_Slice_449 = makePattern<ov::opset8::Slice>({cos_sin_cache, {0}, seq_length, {1}, {0}});
+    slice_Slice_449->set_friendly_name("slice_Slice_449");
+    auto slice_StridedSlice_449 = GenStridedSlice(cos_sin_cache, {0}, seq_length, {1}, 1);
+    slice_StridedSlice_449->set_friendly_name("slice_StridedSlice_449");
+    auto var_split_2 = makePattern<opset1::VariadicSplit>({cos_sin_cache, 0, {0, ov::gen_pattern::Symbol("end")}});
+    var_split_2->set_output_size(2);
+    var_split_2->set_friendly_name("var_split_2");
+
+    auto view_Reshape_460 =
+        makePattern<opset1::Reshape>({slice_StridedSlice_449 | slice_Slice_449 | var_split_2->output(0),
+                                      ListConstruct_379_Concat | const_target_shape_2},
+                                     {{"special_zero", false}});
+    view_Reshape_460->set_friendly_name("view_Reshape_460");
+
+    auto cos_tab = makePattern<opset8::Gather>({view_Reshape_460, 0, -1}, {{"batch_dims", 0}});
+    cos_tab->set_friendly_name("cos_tab");
+    auto x_even_cos = makePattern<opset1::Multiply>({x_even, cos_tab}, {{"auto_broadcast", "numpy"}});
+    x_even_cos->set_friendly_name("x_even_cos");
+
+    auto sin_tab = makePattern<opset8::Gather>({view_Reshape_460, 1, -1}, {{"batch_dims", 0}});
+    sin_tab->set_friendly_name("sin_tab");
+    auto x_odd_sin = makePattern<opset1::Multiply>({x_odd, sin_tab}, {{"auto_broadcast", "numpy"}});
+    x_odd_sin->set_friendly_name("x_odd_sin");
+    auto neg_x_odd_sin = makePattern<opset1::Multiply>({x_odd_sin, -1.000000f}, {{"auto_broadcast", "numpy"}});
+    neg_x_odd_sin->set_friendly_name("neg_x_odd_sin");
+    auto sub_Subtract_469 = makePattern<opset1::Add>({x_even_cos, neg_x_odd_sin}, {{"auto_broadcast", "numpy"}});
+    sub_Subtract_469->set_friendly_name("sub_Subtract_469");
+
+    auto y_even = makePattern<opset1::Unsqueeze>({sub_Subtract_469, -1});
+    y_even->set_friendly_name("y_even");
+    auto x_odd_cos = makePattern<opset1::Multiply>({x_odd, cos_tab}, {{"auto_broadcast", "numpy"}});
+    x_odd_cos->set_friendly_name("x_odd_cos");
+    auto x_even_sin = makePattern<opset1::Multiply>({x_even, sin_tab}, {{"auto_broadcast", "numpy"}});
+    x_even_sin->set_friendly_name("x_even_sin");
+    auto add_Add_476 = makePattern<opset1::Add>({x_odd_cos, x_even_sin}, {{"auto_broadcast", "numpy"}});
+    add_Add_476->set_friendly_name("add_Add_476");
+    auto y_odd = makePattern<opset1::Unsqueeze>({add_Add_476, -1});
+    y_odd->set_friendly_name("y_odd");
+
+    auto stack_481 = makePattern<opset1::Concat>({y_even, y_odd}, {{"axis", -1}});
+    stack_481->set_friendly_name("stack_481");
+
+    auto ShapeOf_135133 = makePattern<opset1::ShapeOf>({stack_481});
+    ShapeOf_135133->set_friendly_name("ShapeOf_135133");
+    auto flatten_Slice_497 = GenSlice(ShapeOf_135133, 0, 3, 1, 0);
+    flatten_Slice_497->set_friendly_name("flatten_Slice_497");
+    auto flatten_Concat_500 = makePattern<opset1::Concat>({flatten_Slice_497, {-1}}, {{"axis", 0}});
+    flatten_Concat_500->set_friendly_name("flatten_Concat_500");
+    auto const_target_shape_3 = makeConst({seq_len, batch, head_cnt, ndims});
+    const_target_shape_3->set_friendly_name("const_target_shape_3");
+    // [length, batch, head_cnt, half_rotary_dims, 2]
+    auto flatten_Reshape_501 =
+        makePattern<opset1::Reshape>({stack_481, flatten_Concat_500 | const_target_shape_3}, {{"special_zero", true}});
+    flatten_Reshape_501->set_friendly_name("flatten_Reshape_501");
+    auto slice_Slice_443 = GenSlice(cur_key_transposed, ndims, INT_MAX, 1, 3);
+    slice_Slice_443->set_friendly_name("slice_Slice_443");
+
+    auto cat_Concat_505 =
+        makePattern<opset1::Concat>({flatten_Reshape_501, slice_Slice_443 | var_split_1->output(1)}, {{"axis", -1}});
+    cat_Concat_505->set_friendly_name("cat_Concat_505");
 
     auto result = cat_Concat_505;
 
