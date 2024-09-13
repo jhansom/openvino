@@ -582,6 +582,7 @@ ov::pass::RoPEFusionChatGLM4::RoPEFusionChatGLM4(int split_output_id) {
 
     auto qkv_linear = makePattern("[?,?,?]");  //  [seq_length, batch_size, 4608]
     auto seq_length = makePattern("i32[2]");
+    auto seq_length_1d = makePattern("i32[1]");
     auto cos_sin_cache = makePattern("[?,?,?,?]");  // [max_pos_embeddings, batch_size, 32, 2]
 
     auto ndims = ov::gen_pattern::Symbol("ndims");
@@ -613,15 +614,15 @@ ov::pass::RoPEFusionChatGLM4::RoPEFusionChatGLM4(int split_output_id) {
 
     // rotate half
     auto ListConstruct_452_Concat =
-        makePattern<opset1::Concat>({seq_length, {-1}, {head_cnt}, {ndims / 2}, {2}}, {{"axis", 0}});
+        makePattern<opset1::Concat>({{-1}, {head_cnt}, seq_length, {ndims / 2}, {2}}, {{"axis", 0}});
     ListConstruct_452_Concat->set_friendly_name("ListConstruct_452_Concat");
-    auto const_target_shape_1 = makeConst({seq_len, batch, head_cnt, ndims / 2, 2});
+    auto const_target_shape_1 = makeConst({batch, head_cnt, seq_len, ndims / 2, 2});
     const_target_shape_1->set_friendly_name("const_target_shape_1");
 
     auto ListConstruct_379_Concat =
-        makePattern<opset1::Concat>({seq_length, {-1}, {1}, {ndims / 2}, {2}}, {{"axis", 0}});
+        makePattern<opset1::Concat>({{-1}, {1}, seq_length_1d, {ndims / 2}, {2}}, {{"axis", 0}});
     ListConstruct_379_Concat->set_friendly_name("ListConstruct_379_Concat");
-    auto const_target_shape_2 = makeConst({seq_len, batch, 1, ndims / 2, 2});
+    auto const_target_shape_2 = makeConst({batch, 1, seq_len, ndims / 2, 2});
     const_target_shape_2->set_friendly_name("const_target_shape_2");
 
     auto reshape_Reshape_453 = makePattern<opset1::Reshape>(

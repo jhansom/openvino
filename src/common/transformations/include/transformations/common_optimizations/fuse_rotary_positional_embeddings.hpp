@@ -100,11 +100,12 @@ public:
         add_matcher<ov::pass::RoPEFusionIOSlicing>();
         add_matcher<ov::pass::RoPEFusionPreprocess>();
 
-        add_matcher<ov::pass::RoPEFusionChatGLM4>(0);
-        add_matcher<ov::pass::RoPEFusionChatGLM4>(1);
 
         add_matcher<ov::pass::RoPEFusionChatGLM>(0);
         add_matcher<ov::pass::RoPEFusionChatGLM>(1);
+
+        add_matcher<ov::pass::RoPEFusionChatGLM4>(0);
+        add_matcher<ov::pass::RoPEFusionChatGLM4>(1);
 
         add_matcher<ov::pass::RoPEFusionQwen>(0);
         add_matcher<ov::pass::RoPEFusionQwen>(1);
