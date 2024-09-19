@@ -633,9 +633,9 @@ ov::pass::RoPEFusionChatGLM4::RoPEFusionChatGLM4(int split_output_id) {
     auto x_odd = makePattern<opset8::Gather>({reshape_Reshape_453, 1, -1}, {{"batch_dims", 0}});
     x_odd->set_friendly_name("x_odd");
     auto ScatterUpdate = makePattern<opset3::ScatterUpdate>({{0, 0}, {1}, seq_length, {0}}, {});
-    auto slice_Slice_449 = makePattern<ov::opset8::Slice>({cos_sin_cache, {0}, ScatterUpdate, {1}, {0}});
+    auto slice_Slice_449 = makePattern<ov::opset8::Slice>({cos_sin_cache, {0,0}, ScatterUpdate, {1,1}, {0}});
     slice_Slice_449->set_friendly_name("slice_Slice_449");
-    auto slice_StridedSlice_449 = GenStridedSlice(cos_sin_cache, {0}, ScatterUpdate, {1}, 1);
+    auto slice_StridedSlice_449 = GenStridedSlice(cos_sin_cache, {0,0}, ScatterUpdate, {1,1}, 1);
     slice_StridedSlice_449->set_friendly_name("slice_StridedSlice_449");
     auto var_split_2 = makePattern<opset1::VariadicSplit>({cos_sin_cache, 0, {0, ov::gen_pattern::Symbol("end")}});
     var_split_2->set_output_size(2);
@@ -681,7 +681,7 @@ ov::pass::RoPEFusionChatGLM4::RoPEFusionChatGLM4(int split_output_id) {
     flatten_Slice_497->set_friendly_name("flatten_Slice_497");
     auto flatten_Concat_500 = makePattern<opset1::Concat>({flatten_Slice_497, {-1}}, {{"axis", 0}});
     flatten_Concat_500->set_friendly_name("flatten_Concat_500");
-    auto const_target_shape_3 = makeConst({seq_len, batch, head_cnt, ndims});
+    auto const_target_shape_3 = makeConst({batch, head_cnt, seq_len, ndims});
     const_target_shape_3->set_friendly_name("const_target_shape_3");
     // [length, batch, head_cnt, half_rotary_dims, 2]
     auto flatten_Reshape_501 =
