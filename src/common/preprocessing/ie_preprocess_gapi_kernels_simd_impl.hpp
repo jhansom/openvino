@@ -297,6 +297,10 @@ CV_ALWAYS_INLINE void nv12ToRgbRowImpl(isa_tag_t, const uchar** srcY, const ucha
         v_load_deinterleave(srcY[0] + i, vy[0], vy[1]);
         v_load_deinterleave(srcY[1] + i, vy[2], vy[3]);
 
+#ifdef __GNUG__
+#       pragma GCC diagnostic push
+#       pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
         v_int32 ruv[4], guv[4], buv[4];
         uvToRGBuv(u, v, ruv, guv, buv);
 
@@ -305,6 +309,9 @@ CV_ALWAYS_INLINE void nv12ToRgbRowImpl(isa_tag_t, const uchar** srcY, const ucha
         for (int k = 0; k < 4; k++) {
             yRGBuvToRGB(vy[k], ruv, guv, buv, r[k], g[k], b[k]);
         }
+#ifdef __GNUG__
+#       pragma GCC diagnostic pop
+#endif
 
         for (int k = 0; k < 4; k++)
             std::swap(r[k], b[k]);
@@ -366,6 +373,10 @@ CV_ALWAYS_INLINE void i420ToRgbRowImpl(isa_tag_t, const uint8_t** srcY, const ui
         v_load_deinterleave(srcY[1] + i, vy[2], vy[3]);
 
         v_int32 ruv[4], guv[4], buv[4];
+#ifdef __GNUG__
+#       pragma GCC diagnostic push
+#       pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
         uvToRGBuv(u, v, ruv, guv, buv);
 
         v_uint8 r[4], g[4], b[4];
@@ -373,6 +384,10 @@ CV_ALWAYS_INLINE void i420ToRgbRowImpl(isa_tag_t, const uint8_t** srcY, const ui
         for (int k = 0; k < 4; k++) {
             yRGBuvToRGB(vy[k], ruv, guv, buv, r[k], g[k], b[k]);
         }
+#ifdef __GNUG__
+#       pragma GCC diagnostic pop
+#endif
+
 
         for (int k = 0; k < 4; k++)
             std::swap(r[k], b[k]);
@@ -731,6 +746,10 @@ template<typename isa_tag_t, typename T, int chs>
 CV_ALWAYS_INLINE void splitRowImpl(isa_tag_t, const T* in, std::array<T*, chs>& outs, const int length) {
     static_assert(chs > 1 && chs < 5, "This number of channels isn't supported.");
 
+#ifdef __GNUG__
+#       pragma GCC diagnostic push
+#       pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     if (chs == 2) {
         splitRowC2_Impl<vector_type_of_t<isa_tag_t, T>, T>(in, outs[0], outs[1], length);
         return;
@@ -741,6 +760,9 @@ CV_ALWAYS_INLINE void splitRowImpl(isa_tag_t, const T* in, std::array<T*, chs>& 
         splitRowC4_Impl<vector_type_of_t<isa_tag_t, T>, T>(in, outs[0], outs[1], outs[2], outs[3], length);
         return;
     }
+#ifdef __GNUG__
+#       pragma GCC diagnostic pop
+#endif
 }
 
 template<typename isa_tag_t, typename T, int chs>

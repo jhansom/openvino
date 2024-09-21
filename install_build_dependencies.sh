@@ -170,6 +170,56 @@ elif [ -f /etc/os-release ] && grep -q "raspbian" /etc/os-release; then
     else
         sudo -E apt-get install -y libpng-dev
     fi
+elif [ -f /etc/os-release ] && grep -q "debian" /etc/os-release; then
+    # Debian
+    host_cpu=$(uname -m)
+    if [ "$host_cpu" = "x86_64" ]; then
+        x86_64_specific_packages="gcc-multilib g++-multilib"
+    else
+        x86_64_specific_packages=""
+    fi
+
+    sudo -E apt update
+    sudo -E apt-get install -y \
+            build-essential \
+            cmake \
+            ccache \
+            curl \
+            wget \
+            libssl-dev \
+            ca-certificates \
+            git \
+            git-lfs \
+            libboost-regex-dev \
+            $x86_64_specific_packages \
+            libgtk2.0-dev \
+            pkg-config \
+            unzip \
+            automake \
+            libtool \
+            autoconf \
+            shellcheck \
+            patchelf \
+            libenchant-2-dev \
+            python3-pip \
+            python3-enchant \
+            python3-setuptools \
+            libcairo2-dev \
+            libpango1.0-dev \
+            libglib2.0-dev \
+            libgtk2.0-dev \
+            libswscale-dev \
+            libavcodec-dev \
+            libavformat-dev \
+            libgstreamer1.0-0 \
+            gstreamer1.0-plugins-base \
+            libusb-1.0-0-dev \
+            libopenblas-dev \
+            libjson-c-dev \
+            libpng-dev \
+            clang \
+            libclang-dev \
+            clang-format
 else
     echo "Unknown OS, please install build dependencies manually"
 fi

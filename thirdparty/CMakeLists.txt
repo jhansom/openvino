@@ -55,6 +55,7 @@ target_include_directories(ocv_hal INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/ocv")
 add_subdirectory(ade EXCLUDE_FROM_ALL)
 add_subdirectory(fluid/modules/gapi EXCLUDE_FROM_ALL)
 set_target_properties(ade fluid PROPERTIES FOLDER thirdparty)
+set_target_properties(fluid PROPERTIES COMPILE_FLAGS "-Wno-maybe-uninitialized")
 openvino_developer_export_targets(COMPONENT openvino_common TARGETS ade fluid)
 
 ov_install_static_lib(ade openvino_common)

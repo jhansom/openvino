@@ -170,6 +170,10 @@ QueryNetworkResult Engine::QueryNetwork(
             consoleOutput());
     std::set<std::string> namesToExclude;
     const auto supportedNetworks = vpu::FrontEnd::checkSupportedNetworks(network, namesToExclude);
+#ifdef __GNUG__
+#       pragma GCC diagnostic push
+#       pragma GCC diagnostic ignored "-Wrange-loop-construct"
+#endif
     for (const auto supportedNetwork : supportedNetworks) {
         const auto supportedLayers = getSupportedLayers(
                 supportedNetwork,
@@ -192,6 +196,9 @@ QueryNetworkResult Engine::QueryNetwork(
             }
         }
     }
+#ifdef __GNUG__
+#       pragma GCC diagnostic pop
+#endif
 
     return res;
 }

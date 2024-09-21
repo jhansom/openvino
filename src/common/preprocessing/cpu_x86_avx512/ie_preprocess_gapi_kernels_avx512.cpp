@@ -31,6 +31,7 @@ using namespace cv;
 #if defined __GNUC__
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wstrict-overflow"
+# pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
 
 namespace InferenceEngine {
@@ -426,6 +427,7 @@ bool calcRowLinear8UC1Impl(avx512_tag,
                                            2, 6, 10, 14, 3, 7, 11, 15,
                                            0, 4, 8,  12, 1, 5, 9,  13,
                                            2, 6, 10, 14, 3, 7, 11, 15);
+
             // vertical pass
             avx512::verticalPass_lpi4_8U(src0, src1, tmp, beta, shuf_mask1, inSz.width);
 
@@ -447,7 +449,6 @@ bool calcRowLinear8UC1Impl(avx512_tag,
                 avx512::horizontalPass_anylpi_8U(alpha, mapsx, dst, tmp, l, outLength);
             }
         }  // if lpi == 4
-
     } else if (!xRatioEq) {
         GAPI_DbgAssert(yRatioEq);
 

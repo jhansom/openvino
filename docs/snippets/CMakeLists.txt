@@ -5,9 +5,9 @@
 set(TARGET_NAME ie_docs_snippets)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR OV_COMPILER_IS_CLANG)
-    ie_add_compiler_flags(-Wno-unused-variable)
+    ie_add_compiler_flags(-Wno-unused-variable -Wno-nonnull)
     if(CMAKE_COMPILER_IS_GNUCXX)
-        ie_add_compiler_flags(-Wno-unused-variable -Wno-unused-but-set-variable)
+        ie_add_compiler_flags(-Wno-unused-variable -Wno-unused-but-set-variable -Wno-nonnull)
     endif()
 endif()
 

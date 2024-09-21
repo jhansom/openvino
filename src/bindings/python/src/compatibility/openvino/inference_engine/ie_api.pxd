@@ -84,7 +84,7 @@ cdef class InputInfoCPtr:
 cdef class PreProcessInfo:
     cdef CPreProcessInfo* _ptr
     cdef const CPreProcessInfo* _cptr
-    cpdef object _user_data
+    cdef object _user_data
 
 cdef class PreProcessChannel:
     cdef CPreProcessChannel.Ptr _ptr

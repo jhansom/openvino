@@ -617,7 +617,14 @@ static bool parseCommandLine(int* argc, char*** argv) {
         std::stringstream message;
         message << "Unknown arguments: ";
         for (auto arg = 1; arg < *argc; arg++) {
+#ifdef __GNUG__
+#       pragma GCC diagnostic push
+#       pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
             message << argv[arg];
+#ifdef __GNUG__
+#       pragma GCC diagnostic pop
+#endif
             if (arg < *argc) {
                 message << " ";
             }
