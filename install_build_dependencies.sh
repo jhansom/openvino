@@ -50,7 +50,7 @@ if [ -f /etc/lsb-release ]; then
             autoconf \
             shellcheck \
             patchelf \
-            libenchant1c2a \
+            libenchant-2-dev \
             python3-pip \
             python3-enchant \
             python3-setuptools \
@@ -64,12 +64,8 @@ if [ -f /etc/lsb-release ]; then
             libgstreamer1.0-0 \
             gstreamer1.0-plugins-base \
             libusb-1.0-0-dev \
-            libopenblas-dev
-    if apt-cache search --names-only '^libjson-c2'| grep -q libjson-c2; then
-        sudo -E apt-get install -y libjson-c2
-    else
-        sudo -E apt-get install -y libjson-c3
-    fi
+            libopenblas-dev \
+            libjson-c-dev
     if apt-cache search --names-only '^libpng12-dev'| grep -q libpng12; then
         sudo -E apt-get install -y libpng12-dev
     else
