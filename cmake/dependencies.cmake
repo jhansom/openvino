@@ -195,21 +195,8 @@ if(ENABLE_OPENCV)
                 VERSION_REGEX ".*_([0-9]+.[0-9]+.[0-9]+).*"
                 SHA256 "3e162f96e86cba8836618134831d9cf76df0438778b3e27e261dedad9254c514")
     elseif(LINUX)
-        if(LINUX_OS_NAME STREQUAL "Ubuntu 22.04" OR LINUX_OS_NAME STREQUAL "LinuxMint 21.2")
-            set(OPENCV_SUFFIX "ubuntu22")
-            set(OPENCV_HASH "2fe7bbc40e1186eb8d099822038cae2821abf617ac7a16fadf98f377c723e268")
-        elseif(LINUX_OS_NAME STREQUAL "Ubuntu 24.04" OR LINUX_OS_NAME STREQUAL "LinuxMint 22")
-            set(OPENCV_SUFFIX "ubuntu24")
-            set(OPENCV_HASH "2fe7bbc40e1186eb8d099822038cae2821abf617ac7a16fadf98f377c723e268")
-        elseif(LINUX_OS_NAME STREQUAL "Debian 11")
-            set(OPENCV_SUFFIX "debian11")
-            set(OPENCV_HASH "2fe7bbc40e1186eb8d099822038cae2821abf617ac7a16fadf98f377c723e268")
-        elseif(LINUX_OS_NAME STREQUAL "Debian 12")
-            set(OPENCV_SUFFIX "debian12")
-            set(OPENCV_HASH "2fe7bbc40e1186eb8d099822038cae2821abf617ac7a16fadf98f377c723e268")
-        elseif(NOT DEFINED OpenCV_DIR AND NOT DEFINED ENV{OpenCV_DIR})
-            message(FATAL_ERROR "OpenCV is not available on current platform (${LINUX_OS_NAME})")
-        endif()
+        set(OPENCV_SUFFIX "ubuntu20")
+        set(OPENCV_HASH "2fe7bbc40e1186eb8d099822038cae2821abf617ac7a16fadf98f377c723e268")
         RESOLVE_DEPENDENCY(OPENCV
                 ARCHIVE_LIN "opencv/opencv_${OPENCV_VERSION}-${OPENCV_BUILD}_${OPENCV_SUFFIX}.txz"
                 TARGET_PATH "${TEMP}/opencv_${OPENCV_VERSION}_${OPENCV_SUFFIX}/opencv"
