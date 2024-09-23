@@ -170,7 +170,7 @@ QueryNetworkResult Engine::QueryNetwork(
             consoleOutput());
     std::set<std::string> namesToExclude;
     const auto supportedNetworks = vpu::FrontEnd::checkSupportedNetworks(network, namesToExclude);
-#ifdef __GNUG__
+#if defined(__GNUG__) && __GNUG__ >= 10
 #       pragma GCC diagnostic push
 #       pragma GCC diagnostic ignored "-Wrange-loop-construct"
 #endif
@@ -196,7 +196,7 @@ QueryNetworkResult Engine::QueryNetwork(
             }
         }
     }
-#ifdef __GNUG__
+#if defined(__GNUG__) && __GNUG__ >= 10
 #       pragma GCC diagnostic pop
 #endif
 
