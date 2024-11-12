@@ -62,6 +62,7 @@ public:
             }
         }
         FRONT_END_INITIALIZATION_CHECK(false, "FrontEnd for Framework ", framework, " is not found");
+        return NULL;
     }
 
     std::vector<std::string> available_front_ends() {
