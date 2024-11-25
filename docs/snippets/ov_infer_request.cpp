@@ -69,11 +69,18 @@ infer_request.set_tensor("tensor_name2", tensor2);
 
 {
 //! [get_set_tensor_by_port]
+#ifdef __GNUG__
+#       pragma GCC diagnostic push
+#       pragma GCC diagnostic ignored "-Wnonnull"
+#endif
 auto input_port = model->input(0);
 auto output_port = model->output("tensor_name");
 ov::Tensor input_tensor;
 infer_request.set_tensor(input_port, input_tensor);
 auto output_tensor = infer_request.get_tensor(output_port);
+#ifdef __GNUG__
+#       pragma GCC diagnostic pop
+#endif
 //! [get_set_tensor_by_port]
 }
 

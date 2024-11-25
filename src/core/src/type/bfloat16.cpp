@@ -59,7 +59,14 @@ size_t bfloat16::size() const {
 bfloat16::operator float() const {
     uint32_t tmp = (static_cast<uint32_t>(m_value) << 16);
     const float* f = reinterpret_cast<const float*>(&tmp);
+#ifdef __GNUG__
+#       pragma GCC diagnostic push
+#       pragma GCC diagnostic ignored "-Wuninitialized"
+#endif
     return *f;
+#ifdef __GNUG__
+#       pragma GCC diagnostic pop
+#endif
 }
 
 uint16_t bfloat16::to_bits() const {

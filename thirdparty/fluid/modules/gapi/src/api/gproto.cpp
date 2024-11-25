@@ -163,10 +163,17 @@ bool cv::can_describe(const GMetaArg& meta, const GRunArgP& argp)
 #endif //  !defined(GAPI_STANDALONE)
     case GRunArgP::index_of<cv::Mat*>():               return util::holds_alternative<GMatDesc>(meta) &&
                                                               util::get<GMatDesc>(meta).canDescribe(*util::get<cv::Mat*>(argp));
+#ifdef __GNUG__
+#       pragma GCC diagnostic push
+#       pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     case GRunArgP::index_of<cv::Scalar*>():            return meta == GMetaArg(cv::descr_of(*util::get<cv::Scalar*>(argp)));
     case GRunArgP::index_of<cv::MediaFrame*>():        return meta == GMetaArg(cv::descr_of(*util::get<cv::MediaFrame*>(argp)));
     case GRunArgP::index_of<cv::detail::VectorRef>():  return meta == GMetaArg(util::get<cv::detail::VectorRef>(argp).descr_of());
     case GRunArgP::index_of<cv::detail::OpaqueRef>():  return meta == GMetaArg(util::get<cv::detail::OpaqueRef>(argp).descr_of());
+#ifdef __GNUG__
+#       pragma GCC diagnostic pop
+#endif
     default: util::throw_error(std::logic_error("Unsupported GRunArgP type"));
     }
 }
@@ -181,6 +188,10 @@ bool cv::can_describe(const GMetaArg& meta, const GRunArg& arg)
 #endif //  !defined(GAPI_STANDALONE)
     case GRunArg::index_of<cv::Mat>():               return util::holds_alternative<GMatDesc>(meta) &&
                                                             util::get<GMatDesc>(meta).canDescribe(util::get<cv::Mat>(arg));
+#ifdef __GNUG__
+#       pragma GCC diagnostic push
+#       pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     case GRunArg::index_of<cv::Scalar>():            return meta == cv::GMetaArg(descr_of(util::get<cv::Scalar>(arg)));
     case GRunArg::index_of<cv::detail::VectorRef>(): return meta == cv::GMetaArg(util::get<cv::detail::VectorRef>(arg).descr_of());
     case GRunArg::index_of<cv::detail::OpaqueRef>(): return meta == cv::GMetaArg(util::get<cv::detail::OpaqueRef>(arg).descr_of());
@@ -188,6 +199,9 @@ bool cv::can_describe(const GMetaArg& meta, const GRunArg& arg)
     case GRunArg::index_of<cv::RMat>():              return util::holds_alternative<GMatDesc>(meta) &&
                                                             util::get<GMatDesc>(meta).canDescribe(cv::util::get<cv::RMat>(arg));
     case GRunArg::index_of<cv::MediaFrame>():        return meta == cv::GMetaArg(util::get<cv::MediaFrame>(arg).desc());
+#ifdef __GNUG__
+#       pragma GCC diagnostic pop
+#endif
     default: util::throw_error(std::logic_error("Unsupported GRunArg type"));
     }
 }

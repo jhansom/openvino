@@ -370,7 +370,14 @@ bool calcRowLinear8UC3C4Impl<avx512_tag, 3>(avx512_tag,
                                             const int      lpi,
                                             const int      ) {
     constexpr int chanNum = 3;
+#ifdef __GNUG__
+#       pragma GCC diagnostic push
+#       pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     return avx512::calcRowLinear_8UC_Impl<chanNum>(avx512_tag{}, dst, src0, src1, alpha, clone, mapsx, beta, tmp, inSz, outSz, lpi);
+#ifdef __GNUG__
+#       pragma GCC diagnostic pop
+#endif
 }
 
 // Resize (bi-linear, 8UC4)
@@ -389,7 +396,14 @@ bool calcRowLinear8UC3C4Impl<avx512_tag, 4>(avx512_tag,
                                             const int     lpi,
                                             const int      ) {
     constexpr int chanNum = 4;
+#ifdef __GNUG__
+#       pragma GCC diagnostic push
+#       pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     return avx512::calcRowLinear_8UC_Impl<chanNum>(avx512_tag{}, dst, src0, src1, alpha, clone, mapsx, beta, tmp, inSz, outSz, lpi);
+#ifdef __GNUG__
+#       pragma GCC diagnostic pop
+#endif
 }
 
 // 8UC1 Resize (bi-linear)
@@ -430,9 +444,15 @@ bool calcRowLinear8UC1Impl(avx512_tag,
             avx512::verticalPass_lpi4_8U(src0, src1, tmp, beta, shuf_mask1, inSz.width);
 
             // horizontal pass
+#ifdef __GNUG__
+#       pragma GCC diagnostic push
+#       pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
             avx512::horizontalPass_lpi4_U8C1(clone, mapsx, tmp, dst, shuf_mask1,
                                              outSz.width);
-
+#ifdef __GNUG__
+#       pragma GCC diagnostic pop
+#endif
         } else {  // if any lpi
             int inLength = inSz.width;
             int outLength = outSz.width;
@@ -440,11 +460,18 @@ bool calcRowLinear8UC1Impl(avx512_tag,
             for (int l = 0; l < lpi; ++l) {
                 short beta0 = beta[l];
 
+#ifdef __GNUG__
+#       pragma GCC diagnostic push
+#       pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
                 // vertical pass
                 avx512::verticalPass_anylpi_8U(src0, src1, tmp, beta0, l, inLength, inLength);
 
                 // horizontal pass
                 avx512::horizontalPass_anylpi_8U(alpha, mapsx, dst, tmp, l, outLength);
+#ifdef __GNUG__
+#       pragma GCC diagnostic pop
+#endif
             }
         }  // if lpi == 4
 
@@ -479,15 +506,28 @@ bool calcRowLinear8UC1Impl(avx512_tag,
                                            0, 4, 8,  12, 1, 5, 9,  13,
                                            2, 6, 10, 14, 3, 7, 11, 15);
 
+#ifdef __GNUG__
+#       pragma GCC diagnostic push
+#       pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
             avx512::horizontalPass_lpi4_U8C1(clone, mapsx, tmp, dst, shuf_mask1,
                                              outSz.width);
-
+#ifdef __GNUG__
+#       pragma GCC diagnostic pop
+#endif
         } else {  // any LPI
             for (int l = 0; l < lpi; ++l) {
                 const uchar* src = src0[l];
 
+#ifdef __GNUG__
+#       pragma GCC diagnostic push
+#       pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
                 // horizontal pass
                 avx512::horizontalPass_anylpi_8U(alpha, mapsx, dst, src, l, outSz.width);
+#ifdef __GNUG__
+#       pragma GCC diagnostic pop
+#endif
             }
         }
 
@@ -499,8 +539,15 @@ bool calcRowLinear8UC1Impl(avx512_tag,
         for (int l = 0; l < lpi; ++l) {
             short beta0 = beta[l];
 
+#ifdef __GNUG__
+#       pragma GCC diagnostic push
+#       pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
             // vertical pass
             avx512::verticalPass_anylpi_8U(src0, src1, dst[l], beta0, l, inLength, outLength);
+#ifdef __GNUG__
+#       pragma GCC diagnostic pop
+#endif
         }
 
     } else {

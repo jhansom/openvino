@@ -1,7 +1,8 @@
 [submodule "src/plugins/intel_cpu/thirdparty/mkl-dnn"]
 	path = src/plugins/intel_cpu/thirdparty/mkl-dnn
-	url = https://github.com/openvinotoolkit/oneDNN.git
+	url = https://github.com/jhansom/oneDNN.git
 	ignore = dirty
+	branch = mkl-dnn
 [submodule "thirdparty/xbyak"]
 	path = thirdparty/xbyak
 	url = https://github.com/herumi/xbyak.git
@@ -46,7 +47,7 @@
 	url = https://github.com/protocolbuffers/protobuf.git
 [submodule "src/bindings/python/thirdparty/pybind11"]
 	path = src/bindings/python/thirdparty/pybind11
-	url = https://github.com/pybind/pybind11.git
+	url = https://github.com/jhansom/pybind11.git
 [submodule "thirdparty/ittapi/ittapi"]
 	path = thirdparty/ittapi/ittapi
 	url = https://github.com/intel/ittapi.git
@@ -55,7 +56,8 @@
 	url = https://github.com/nithinn/ncc.git
 [submodule "thirdparty/onednn_gpu"]
 	path = src/plugins/intel_gpu/thirdparty/onednn_gpu
-	url = https://github.com/oneapi-src/oneDNN.git
+	url = https://github.com/jhansom/oneDNN.git
+	branch = onednn_gpu
 [submodule "tools/pot/thirdparty/open_model_zoo"]
 	path = thirdparty/open_model_zoo
 	url = https://github.com/openvinotoolkit/open_model_zoo.git

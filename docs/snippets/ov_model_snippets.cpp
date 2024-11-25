@@ -110,10 +110,17 @@ void visualize_example(const std::shared_ptr<ov::Model>& m) {
 void model_inputs() {
 std::shared_ptr<ov::Model> model;
 //! [all_inputs_ouputs]
+#ifdef __GNUG__
+#       pragma GCC diagnostic push
+#       pragma GCC diagnostic ignored "-Wnonnull"
+#endif
 /* Take information about all topology inputs */
 auto inputs = model->inputs();
 /* Take information about all topology outputs */
 auto outputs = model->outputs();
+#ifdef __GNUG__
+#       pragma GCC diagnostic pop
+#endif
 //! [all_inputs_ouputs]
 }
 
